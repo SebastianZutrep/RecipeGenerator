@@ -12,20 +12,22 @@ LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
 
 
 def construir_prompt(ingredientes: List[dict]) -> str:
-    """
-    Construye el prompt que se enviará al LLM a partir del inventario del usuario.
-    """
     lista = "\n".join(
-        f"- {ing['nombre']}: {ing['cantidad']} {ing.get('unidad', '')}".strip()
+        f"- {ing['nombre']}: {ing['cantidad']} {ing.get('unidad', '') or ''}".strip()
         for ing in ingredientes
     )
-    prompt = f"""Eres un chef experto. El usuario tiene los siguientes ingredientes disponibles:
+    prompt = f"""Eres un chef experto. El usuario tiene EXACTAMENTE estos ingredientes disponibles:
 
 {lista}
 
-Con SOLO y únicamente esos ingredientes (puedes usar sal, pimienta y agua de forma libre), genera UNA receta completa. Genera la 
-receta usando exactamente la cantidad y unidad que te dice el usuario. No puedes usar ingredientes que no están en el inventario.
-Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional, sin comillas adicionales, con esta estructura exacta:
+REGLAS ESTRICTAS que debes cumplir sin excepción:
+1. USA ÚNICAMENTE los ingredientes listados arriba. No puedes añadir ningún otro ingrediente.
+2. Las cantidades en la receta NO pueden superar las cantidades indicadas por el usuario.
+3. Puedes usar sal, pimienta y agua sin restricción.
+4. Si un ingrediente no tiene unidad, es porque se cuenta en unidades (ej: 3 huevos).
+
+Genera UNA sola receta completa con esos ingredientes.
+Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional, con esta estructura exacta:
 
 {{
   "nombre_plato": "string",
@@ -39,7 +41,7 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional, sin comill
   "nivel_dificultad": "Fácil | Medio | Difícil"
 }}"""
     return prompt
-
+    
 
 def parsear_respuesta_llm(respuesta_texto: str) -> dict:
     """
