@@ -23,7 +23,8 @@ def construir_prompt(ingredientes: List[dict]) -> str:
 
 {lista}
 
-Con SOLO esos ingredientes (puedes usar sal, pimienta y agua de forma libre), genera UNA receta completa.
+Con SOLO y únicamente esos ingredientes (puedes usar sal, pimienta y agua de forma libre), genera UNA receta completa. Genera la 
+receta usando exactamente la cantidad y unidad que te dice el usuario. No puedes usar ingredientes que no están en el inventario.
 Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional, sin comillas adicionales, con esta estructura exacta:
 
 {{
