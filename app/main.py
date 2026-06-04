@@ -1,27 +1,5 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-
-app = FastAPI(title="Generador de Recetas")
-
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-
-@app.get("/")
-def root():
-    return {"message": "API Generador de Recetas"}
-
-
-@app.get("/health")
-def health():
-    return {"status": "ok"}
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
->>>>>>> origin/main
->>>>>>> feature/schemas
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine, Base
@@ -53,12 +31,4 @@ app.include_router(calificaciones.router, prefix="/calificaciones", tags=["Calif
 
 @app.get("/", tags=["Root"])
 def root():
-<<<<<<< HEAD
     return {"mensaje": "API de Generador de Recetas funcionando correctamente"}
-=======
-<<<<<<< HEAD
-    return {"mensaje": "API de Generador de Recetas funcionando correctamente"}
-=======
-    return {"mensaje": "API de Generador de Recetas funcionando correctamente"}
->>>>>>> origin/main
->>>>>>> feature/schemas
