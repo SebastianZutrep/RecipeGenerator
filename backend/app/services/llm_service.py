@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 import os
 import json
 import httpx
@@ -113,4 +111,3 @@ async def generar_receta(ingredientes: List[dict]) -> dict:
 
     receta = parsear_respuesta_llm(contenido)
     return receta
->>>>>>> feature/llm-integration
