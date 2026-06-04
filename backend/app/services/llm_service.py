@@ -6,9 +6,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
-OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-LLM_MODEL = os.getenv("LLM_MODEL", "mistralai/mistral-7b-instruct")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_URL = "https://api.openai.com/v1/chat/completions"
+LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
 
 
 def construir_prompt(ingredientes: List[dict]) -> str:
@@ -57,6 +57,9 @@ def parsear_respuesta_llm(respuesta_texto: str) -> dict:
     except json.JSONDecodeError as e:
         raise ValueError(f"La respuesta del LLM no es JSON válido: {e}\nRespuesta: {texto[:300]}")
 
+    if not isinstance(datos, dict):
+        raise ValueError(f"Falta el campo requerido 'nombre_plato' en la respuesta del LLM")
+
     campos_requeridos = ["nombre_plato", "ingredientes", "pasos_preparacion", "tiempo_estimado", "nivel_dificultad"]
     for campo in campos_requeridos:
         if campo not in datos:
@@ -73,7 +76,7 @@ def parsear_respuesta_llm(respuesta_texto: str) -> dict:
 
 async def generar_receta(ingredientes: List[dict]) -> dict:
     """
-    Servicio principal: llama al LLM con el inventario del usuario y devuelve
+    Servicio principal: llama a OpenAI con el inventario del usuario y devuelve
     la receta estructurada como diccionario Python.
     """
     if not ingredientes:
@@ -82,10 +85,8 @@ async def generar_receta(ingredientes: List[dict]) -> dict:
     prompt = construir_prompt(ingredientes)
 
     headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
         "Content-Type": "application/json",
-        "HTTP-Referer": os.getenv("APP_URL", "http://localhost:8000"),
-        "X-Title": "Generador de Recetas",
     }
 
     payload = {
@@ -93,21 +94,22 @@ async def generar_receta(ingredientes: List[dict]) -> dict:
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.7,
         "max_tokens": 1000,
+        "response_format": {"type": "json_object"},  # fuerza JSON puro — exclusivo de OpenAI
     }
 
     async with httpx.AsyncClient(timeout=30.0) as client:
-        response = await client.post(OPENROUTER_URL, headers=headers, json=payload)
+        response = await client.post(OPENAI_URL, headers=headers, json=payload)
 
     if response.status_code != 200:
         raise RuntimeError(
-            f"Error del proveedor LLM (status {response.status_code}): {response.text[:300]}"
+            f"Error de OpenAI (status {response.status_code}): {response.text[:300]}"
         )
 
     data = response.json()
     try:
         contenido = data["choices"][0]["message"]["content"]
     except (KeyError, IndexError) as e:
-        raise RuntimeError(f"Respuesta inesperada del LLM: {e}\nRespuesta completa: {str(data)[:300]}")
+        raise RuntimeError(f"Respuesta inesperada de OpenAI: {e}\nRespuesta completa: {str(data)[:300]}")
 
     receta = parsear_respuesta_llm(contenido)
     return receta
