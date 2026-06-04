@@ -4,4 +4,3 @@ from app.schemas.schemas import (
     IngredienteReceta, RecetaOut,
     CalificacionCreate, CalificacionOut,
 )
-
